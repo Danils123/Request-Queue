@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, enableProdMode, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { RequestQueue, Request } from "./shared/models/request.queue";
+import { RequestManager, Request } from "./shared/models/request.queue";
 import { PostService } from './core/services/post.service';
+import { create } from 'rxjs-spy';
+import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -15,7 +17,9 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    const orquestrator = new RequestQueue();
+
+
+    const orquestrator = new RequestManager();
 
     let postsMethod = this.ps.get;
     let postsMethod2 = this.ps.get;
@@ -23,7 +27,19 @@ export class AppComponent implements OnInit {
     orquestrator.addRequest(new Request(postsMethod)).subscribe(response => console.log("Solicitud #1 finalizó"));
     orquestrator.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #2 finalizó"));
 
-    orquestrator.execute().asObservable().subscribe(response => console.log("Todas las solicitudes finalizaron"));
+    orquestrator.execute().subscribe(() => {
+      console.log("Todas las solicitudes finalizaron");
+    });
+
+    orquestrator.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #3 finalizó"));
+
+    orquestrator.execute().subscribe(() => {
+      console.log("Todas las solicitudes finalizaron");
+    });
+
+
+    // orquestrator.execute().asObservable().subscribe(response => console.log("Todas las solicitudes finalizaron"));
+
 
   }
 

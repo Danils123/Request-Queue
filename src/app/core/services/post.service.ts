@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Post } from '../../shared/models/Post.model';
 import { ApiService } from './api.service';
+import { tag } from 'rxjs-spy/operators';
 
 @Injectable({
   providedIn: 'root'
