@@ -53,40 +53,60 @@ export interface IRequestList {
     list: Request[];
     numberExecutions: number;
     addRequest: (request: Request) => Observable<any>;
-    execute: () => void;
+    execute: (instance: boolean) => void;
 }
 
 
 export class RequestManager implements IRequestList {
-    numberExecutions: number = 0;
     list: Request[] = [];
-    constructor() {
-    }
+    stack: RequestManager[] = [];
+    numberExecutions: number = 0;
+    isExecuting: boolean = false;
 
+    constructor() { }
+    /**
+      *  Add any request to the manager list, you are going to receive a observable as a response
+    */
     addRequest(request: Request): Observable<any> {
         this.list.push(request);
         return request.getObservable();
     }
 
-    execute(): Observable<boolean> {
+    /**
+      * Execute all request list at the same  time.
+      * If you call execute method many time, every call will be stored in a stack and every will be executed one by one
+    */
+    execute(addToStack: boolean = true): Observable<boolean> {
         let subscriptions = new Subscription();
         let response = new Subject<boolean>();
         let numRequest = this.list.length;
 
+        if (addToStack) {
+            this.stack.push(this);
+        }
 
-        this.list.forEach(item => {
-            let sub = item
-                .getObservable()
-                .subscribe(() => {
-                    numRequest--;
-                    if (numRequest == 0) {
-                        response.next();
-                        subscriptions.unsubscribe();
-                    }
-                });
-            subscriptions.add(sub);
-            item.execute();
-        });
+        if (this.stack.length === 1 || !this.isExecuting) {
+            this.isExecuting = true;
+            this.stack[0].list.forEach(item => {
+                let sub = item
+                    .getObservable()
+                    .subscribe(() => {
+                        numRequest--;
+                        if (numRequest == 0) {
+                            response.next();
+                            subscriptions.unsubscribe();
+                            this.isExecuting = false;
+                            this.stack.shift();
+                            if (this.stack.length > 0) {
+                                this.execute(false);
+                            }
+                        }
+                    });
+                subscriptions.add(sub);
+                item.execute();
+            });
+        }
+
         return response.asObservable();
     }
 }

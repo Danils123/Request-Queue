@@ -10,7 +10,7 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = 'Request-Orquestrator';
+  title = 'Request-manager';
 
   constructor(
     private ps: PostService
@@ -19,26 +19,32 @@ export class AppComponent implements OnInit {
   ngOnInit() {
 
 
-    const orquestrator = new RequestManager();
+    const manager = new RequestManager();
 
     let postsMethod = this.ps.get;
     let postsMethod2 = this.ps.get;
 
-    orquestrator.addRequest(new Request(postsMethod)).subscribe(response => console.log("Solicitud #1 finalizó"));
-    orquestrator.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #2 finalizó"));
+    manager.addRequest(new Request(postsMethod)).subscribe(response => console.log("Solicitud #1 finalizó"));
+    manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #2 finalizó"));
 
-    orquestrator.execute().subscribe(() => {
-      console.log("Todas las solicitudes finalizaron");
+    manager.execute().subscribe(() => {
+      console.log("Todas las solicitudes finalizaron #1");
     });
 
-    orquestrator.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #3 finalizó"));
+    manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #3 finalizó"));
 
-    orquestrator.execute().subscribe(() => {
-      console.log("Todas las solicitudes finalizaron");
+    manager.execute().subscribe(() => {
+      console.log("Todas las solicitudes finalizaron #2");
     });
 
+    // manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #4 finalizó"));
 
-    // orquestrator.execute().asObservable().subscribe(response => console.log("Todas las solicitudes finalizaron"));
+    // manager.execute().subscribe(() => {
+    //   console.log("Todas las solicitudes finalizaron #3");
+    // });
+
+
+    // manager.execute().asObservable().subscribe(response => console.log("Todas las solicitudes finalizaron"));
 
 
   }
