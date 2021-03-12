@@ -3,6 +3,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { tag } from 'rxjs-spy/cjs/operators';
 import { create } from 'rxjs-spy';
+import { RequestStack } from './RequestStack.model';
 
 export enum ETypeQueue {
     PROMISE = 1,
@@ -59,7 +60,7 @@ export interface IRequestList {
 
 export class RequestManager implements IRequestList {
     list: Request[] = [];
-    stack: RequestManager[] = [];
+    stack: RequestStack[] = [];
     numberExecutions: number = 0;
     isExecuting: boolean = false;
 
@@ -78,22 +79,21 @@ export class RequestManager implements IRequestList {
     */
     execute(addToStack: boolean = true): Observable<boolean> {
         let subscriptions = new Subscription();
-        let response = new Subject<boolean>();
         let numRequest = this.list.length;
 
         if (addToStack) {
-            this.stack.push(this);
+            this.stack.push(new RequestStack(new Subject<boolean>(), this));
         }
 
         if (this.stack.length === 1 || !this.isExecuting) {
             this.isExecuting = true;
-            this.stack[0].list.forEach(item => {
+            this.stack[0].manager.list.forEach(item => {
                 let sub = item
                     .getObservable()
                     .subscribe(() => {
                         numRequest--;
                         if (numRequest == 0) {
-                            response.next();
+                            this.stack[0].response.next();
                             subscriptions.unsubscribe();
                             this.isExecuting = false;
                             this.stack.shift();
@@ -107,6 +107,6 @@ export class RequestManager implements IRequestList {
             });
         }
 
-        return response.asObservable();
+        return this.stack[this.stack.length - 1].response.asObservable();
     }
 }

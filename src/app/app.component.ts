@@ -24,8 +24,8 @@ export class AppComponent implements OnInit {
     let postsMethod = this.ps.get;
     let postsMethod2 = this.ps.get;
 
-    manager.addRequest(new Request(postsMethod)).subscribe(response => console.log("Solicitud #1 finalizó"));
     manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #2 finalizó"));
+    manager.addRequest(new Request(postsMethod)).subscribe(response => console.log("Solicitud #1 finalizó"));
 
     manager.execute().subscribe(() => {
       console.log("Todas las solicitudes finalizaron #1");
@@ -37,15 +37,11 @@ export class AppComponent implements OnInit {
       console.log("Todas las solicitudes finalizaron #2");
     });
 
-    // manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #4 finalizó"));
+    manager.addRequest(new Request(postsMethod2)).subscribe(response => console.log("Solicitud #4 finalizó"));
 
-    // manager.execute().subscribe(() => {
-    //   console.log("Todas las solicitudes finalizaron #3");
-    // });
-
-
-    // manager.execute().asObservable().subscribe(response => console.log("Todas las solicitudes finalizaron"));
-
+    manager.execute().subscribe(() => {
+      console.log("Todas las solicitudes finalizaron #3");
+    });
 
   }
 
